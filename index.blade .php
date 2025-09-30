@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" id="installmentsPage">
     <div class="container" style="max-width:1800px;">
         <div class="row justify-content-center">
             <div class="col-lg-12">
@@ -48,6 +48,79 @@
                             <button class="btn btn-outline-danger fw-bold" disabled><i class="bi bi-file-earmark-pdf"></i> PDF</button>
                         @endif
                     </div>
+                </div>
+
+                <!-- Advanced search (main page only) -->
+                <div id="installmentsAdvancedSearchWrapper" class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="fw-bold">بحث متقدم</div>
+                    <div>
+                      <button class="btn btn-sm btn-outline-primary" type="button" id="openInstallmentsAdvancedSearchBtn">إظهار/إخفاء</button>
+                    </div>
+                  </div>
+
+                  <div id="installmentsAdvancedSearchBody" style="display:none;">
+                    <form id="installmentsAdvancedSearchForm" class="card card-body">
+                      <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                          <label class="form-label small mb-1">كلمة بحث</label>
+                          <input type="text" name="q" id="inst_search_q" class="form-control" placeholder="الاسم أو الملاحظة أو رقم" value="{{ request('q','') }}">
+                        </div>
+
+                        <div class="col-md-2">
+                          <label class="form-label small mb-1">الهاتف</label>
+                          <input type="text" name="phone" id="inst_search_phone" class="form-control" placeholder="رقم الهاتف" value="{{ request('phone','') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                          <label class="form-label small mb-1">العنوان</label>
+                          <input type="text" name="address" id="inst_search_address" class="form-control" placeholder="المدينة/الشارع" value="{{ request('address','') }}">
+                        </div>
+
+                        <div class="col-md-2">
+                          <label class="form-label small mb-1">الحالة</label>
+                          <select name="status" id="inst_search_status" class="form-select">
+                            <option value="" {{ request('status','')=='' ? 'selected':'' }}>الكل</option>
+                            <option value="pending" {{ request('status','')=='pending' ? 'selected':'' }}>قيد الانتظار</option>
+                            <option value="paid" {{ request('status','')=='paid' ? 'selected':'' }}>مدفوع</option>
+                          </select>
+                        </div>
+
+                        <div class="col-md-2 text-end">
+                          <button type="button" id="inst_advancedSearchApply" class="btn btn-primary">تطبيق</button>
+                          <button type="button" id="inst_advancedSearchReset" class="btn btn-outline-secondary ms-1">مسح</button>
+                        </div>
+
+                        <div class="col-md-3">
+                          <label class="form-label small mb-1">تاريخ من</label>
+                          <input type="date" name="due_from" id="inst_search_due_from" class="form-control" value="{{ request('due_from','') }}">
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label small mb-1">إلى</label>
+                          <input type="date" name="due_to" id="inst_search_due_to" class="form-control" value="{{ request('due_to','') }}">
+                        </div>
+
+                        <div class="col-md-2">
+                          <label class="form-label small mb-1">مبلغ من</label>
+                          <input type="number" name="amount_min" id="inst_search_amount_min" step="0.01" class="form-control" value="{{ request('amount_min','') }}">
+                        </div>
+                        <div class="col-md-2">
+                          <label class="form-label small mb-1">إلى</label>
+                          <input type="number" name="amount_max" id="inst_search_amount_max" step="0.01" class="form-control" value="{{ request('amount_max','') }}">
+                        </div>
+
+                        <div class="col-md-2">
+                          <label class="form-label small mb-1">به مرفقات</label>
+                          <select name="has_attachments" id="inst_search_has_attachments" class="form-select">
+                            <option value="" {{ request('has_attachments','')=='' ? 'selected':'' }}>الكل</option>
+                            <option value="1" {{ request('has_attachments','')=='1' ? 'selected':'' }}>نعم</option>
+                            <option value="0" {{ request('has_attachments','')=='0' ? 'selected':'' }}>لا</option>
+                          </select>
+                        </div>
+
+                      </div>
+                    </form>
+                  </div>
                 </div>
 
                 <!-- Mobile total -->
@@ -108,7 +181,7 @@
 
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-bold">قيمة كل قسط (جنيه)</label>
-                                                    <input type="number" step="0.01" name="installment_value" id="add_installment_value" class="form-control" value="{{ old('installment_value', '0.00') }}" readonly required>
+                                                    <input type="number" step="0.01" name="installment_value" id="add_installment_value" class="form-control" value="{{ old('installment_value', '0.00') }}">
                                                     <div class="form-text">تحسب تلقائياً = إجمالي ÷ عدد الأقساط</div>
                                                 </div>
 
@@ -394,14 +467,7 @@
                         </tr>
                       </thead>
                       <tbody id="show_payments">
-                        <!-- JS should populate rows like:
-                          <tr>
-                            <td class="text-nowrap">2025-09-28</td>
-                            <td class="text-start">اسم الدافع</td>
-                            <td class="text-nowrap fw-bold text-success">1000.00 ج.م</td>
-                            <td class="text-start small text-muted">ملاحظة هنا</td>
-                          </tr>
-                        -->
+                        <!-- JS populates rows -->
                       </tbody>
                     </table>
                   </div>
@@ -478,6 +544,7 @@
         </div>
     </div>
 </div>
+
                 <!-- Table card -->
 <div class="card shadow-sm d-none d-md-block"> {{-- This card is for larger screens --}}
     <div class="card-header bg-light fw-bold"><i class="bi bi-credit-card"></i> جدول الأقساط</div>
@@ -487,8 +554,8 @@
                 <thead class="table-dark">
                     <tr>
                         <th style="width:40px;"><input type="checkbox" id="selectAllRows"></th>
-                        <th style="width:50px;">#</th> {{-- Slightly adjusted width --}}
-                        <th class="text-start" style="min-width: 120px;">اسم القسط</th> {{-- Ensure minimum width for important column --}}
+                        <th style="width:50px;">#</th>
+                        <th class="text-start" style="min-width: 120px;">اسم القسط</th>
                         <th class="d-none d-md-table-cell" style="min-width: 120px;">صاحب القسط</th>
                         <th style="min-width: 90px;">الكلي</th>
                         <th class="d-none d-sm-table-cell" style="min-width: 90px;">المدفوع</th>
@@ -513,7 +580,6 @@
                 <tbody>
                 @forelse($installments as $i => $item)
                     @php
-                        // prepare simple arrays for data-attributes (same as before)
                         $attachments = [];
                         if(isset($item->attachments) && is_iterable($item->attachments)){
                             foreach($item->attachments as $a){
@@ -542,11 +608,10 @@
                         } elseif(\Illuminate\Support\Facades\Schema::hasTable('installment_payments')) {
                             try {
                                 $dbPays = \Illuminate\Support\Facades\DB::table('installment_payments')->where('installment_id', $item->id)->get();
-                                foreach($dbPays as $p) $payments[] = ['id'=>$p->id,'payer_name'=>$p->payer_name,'amount'=>number_format($p->amount,2,'.',''),'payment_date'=>$p->payment_date,'notes'=>$p->notes];
+                                foreach($dbPays as $p) $payments[] = ['id'=>$p->id,'payer_name'=>$p->payer_name,'amount'=>number_format($p->amount,2,'.',''),'payment_date'=>$p->payment_date,'notes'=>$p->notes ?? ''];
                             } catch(\Throwable $e){}
                         }
 
-                        // per-install export URL detection (same as before)
                         $perExportUrl = '';
                         if(Route::has('installments.exportSingle')){
                             $perExportUrl = route('installments.exportSingle', $item->id);
@@ -558,12 +623,12 @@
                     <tr>
                         <td><input type="checkbox" class="row-checkbox" value="{{ $item->id }}"></td>
                         <td class="text-start small">{{ ($installments->firstItem() ?? 0) + $i }}</td>
-                        <td class="text-start text-truncate" style="max-width: 120px;">{{ $item->name }}</td> {{-- Added text-truncate --}}
-                        <td class="d-none d-md-table-cell text-truncate" style="max-width: 120px;">{{ $item->owner_name ?? '-' }}</td> {{-- Added text-truncate --}}
+                        <td class="text-start text-truncate" style="max-width: 120px;">{{ $item->name }}</td>
+                        <td class="d-none d-md-table-cell text-truncate" style="max-width: 120px;">{{ $item->owner_name ?? '-' }}</td>
                         <td>{{ number_format($item->total_amount, 2) }}</td>
                         <td class="d-none d-sm-table-cell">{{ number_format($item->paidAmount(), 2) }}</td>
                         <td class="d-none d-sm-table-cell">{{ number_format($item->remainingAmount(), 2) }}</td>
-                        <td class="d-none d-lg-table-cell">{{ \Carbon\Carbon::parse($item->due_date)->format('Y-m-d') }}</td> {{-- Formatted date --}}
+                        <td class="d-none d-lg-table-cell">{{ \Carbon\Carbon::parse($item->due_date)->format('Y-m-d') }}</td>
                         <td>
                             @if($item->status == 'paid')
                                 <span class="badge bg-success">مدفوع</span>
@@ -579,27 +644,27 @@
                                     data-installment-name="{{ $item->name }}"
                                     data-remaining="{{ number_format($item->remainingAmount(), 2, '.', '') }}"
                                     data-pay-submit-url="{{ \Illuminate\Support\Facades\Route::has('installments.pay.submit') ? route('installments.pay.submit', $item->id) : url('/installments/'.$item->id.'/pay') }}">
-                                    <i class="bi bi-cash"></i> <span class="d-none d-lg-inline">دفع</span> {{-- Changed to d-lg-inline --}}
+                                    <i class="bi bi-cash"></i> <span class="d-none d-lg-inline">دفع</span>
                                 </button>
                             @else
                                 <span class="text-success">--</span>
                             @endif
                         </td>
-                        <td class="d-none d-lg-table-cell text-truncate" style="max-width: 150px;">{{ Str::limit($item->notes, 50) }}</td> {{-- Added text-truncate --}}
+                        <td class="d-none d-lg-table-cell text-truncate" style="max-width: 150px;">{{ Str::limit($item->notes, 50) }}</td>
 
                         <!-- new visible columns -->
-                        <td class="d-none d-md-table-cell text-truncate" style="max-width:120px;">{{ $item->phone ?? '-' }}</td> {{-- Added text-truncate --}}
-                        <td class="d-none d-md-table-cell text-truncate" style="max-width:150px;">{{ $item->address ?? '-' }}</td> {{-- Added text-truncate --}}
+                        <td class="d-none d-md-table-cell text-truncate" style="max-width:120px;">{{ $item->phone ?? '-' }}</td>
+                        <td class="d-none d-md-table-cell text-truncate" style="max-width:150px;">{{ $item->address ?? '-' }}</td>
                         <td class="d-none d-md-table-cell">
                             @php $first = $attachments[0] ?? null; @endphp
                             @if($first && !empty($first['file_path']))
                                 @php $p = $first['file_path']; $ext = strtolower(pathinfo($p, PATHINFO_EXTENSION)); @endphp
                                 @if(in_array($ext, ['jpg','jpeg','png','gif','webp']))
-                                    <a href="{{ asset('storage_link/'.$p) }}" target="_blank"><img src="{{ asset('storage_link/'.$p) }}" style="width:30px;height:30px;object-fit:cover;border-radius:4px"></a> {{-- Reduced image size --}}
+                                    <a href="{{ asset('storage_link/'.$p) }}" target="_blank"><img src="{{ asset('storage_link/'.$p) }}" style="width:30px;height:30px;object-fit:cover;border-radius:4px"></a>
                                 @elseif($ext === 'pdf')
-                                    <a href="{{ asset('storage_link/'.$p) }}" target="_blank"><i class="bi bi-file-earmark-pdf" style="font-size:1.2rem;color:#c00"></i></a> {{-- Reduced icon size --}}
+                                    <a href="{{ asset('storage_link/'.$p) }}" target="_blank"><i class="bi bi-file-earmark-pdf" style="font-size:1.2rem;color:#c00"></i></a>
                                 @else
-                                    <a href="{{ asset('storage_link/'.$p) }}" target="_blank"><i class="bi bi-paperclip" style="font-size:1.2rem"></i></a> {{-- Reduced icon size --}}
+                                    <a href="{{ asset('storage_link/'.$p) }}" target="_blank"><i class="bi bi-paperclip" style="font-size:1.2rem"></i></a>
                                 @endif
                             @else
                                 —
@@ -626,7 +691,7 @@
                                 data-attachments='@json($attachments)'
                                 data-payments='@json($payments)'
                                 data-export-url="{{ $perExportUrl }}">
-                                <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">عرض</span> {{-- Changed to d-lg-inline --}}
+                                <i class="bi bi-eye"></i> <span class="d-none d-lg-inline">عرض</span>
                             </button>
                         </td>
 
@@ -634,7 +699,7 @@
                             <button type="button" class="btn btn-outline-primary btn-sm btn-export-installment"
                                 data-id="{{ $item->id }}"
                                 data-export-url="{{ $perExportUrl }}">
-                                <i class="bi bi-download"></i> <span class="d-none d-lg-inline">تصدير</span> {{-- Changed to d-lg-inline --}}
+                                <i class="bi bi-download"></i> <span class="d-none d-lg-inline">تصدير</span>
                             </button>
                         </td>
 
@@ -655,14 +720,14 @@
                                 data-address="{{ $item->address ?? '' }}"
                                 data-attachments='@json($attachments)'
                                 data-update-url="{{ route('installments.update', $item->id) }}">
-                                <i class="bi bi-pencil-square"></i> <span class="d-none d-lg-inline">تعديل</span> {{-- Changed to d-lg-inline --}}
+                                <i class="bi bi-pencil-square"></i> <span class="d-none d-lg-inline">تعديل</span>
                             </button>
                         </td>
 
                         <td class="d-none d-sm-table-cell">
                             <form action="{{ route('installments.destroy', $item->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد؟')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> <span class="d-none d-lg-inline">حذف</span></button> {{-- Changed to d-lg-inline --}}
+                                <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> <span class="d-none d-lg-inline">حذف</span></button>
                             </form>
                         </td>
 
@@ -670,7 +735,7 @@
                             @if(auth()->user()->google_token ?? false)
                                 <form action="{{ route('installments.addToGoogle', $item->id) }}" method="POST" style="display:inline;">
                                     @csrf
-                                    <button class="btn btn-outline-success btn-sm" title="إضافة للتقويم"><i class="bi bi-calendar-plus"></i> <span class="d-none d-lg-inline">تقويم</span></button> {{-- Changed to d-lg-inline --}}
+                                    <button class="btn btn-outline-success btn-sm" title="إضافة للتقويم"><i class="bi bi-calendar-plus"></i> <span class="d-none d-md-inline">تقويم</span></button>
                                 </form>
                             @endif
                         </td>
@@ -704,7 +769,6 @@
     <div class="row g-3">
         @forelse($installments as $item)
             @php
-                // prepare attachments/payments for mobile data-attributes
                 $attachmentsMobile = [];
                 if(isset($item->attachments) && is_iterable($item->attachments)){
                     foreach($item->attachments as $a){
@@ -716,11 +780,10 @@
                 $paymentsMobile = [];
                 if(isset($item->payments) && is_iterable($item->payments)){
                     foreach($item->payments as $p){
-                        $paymentsMobile[] = ['id'=>$p->id ?? null,'payer_name'=>$p->payer_name ?? '','amount'=>number_format($p->amount ?? 0,2,'.',''),'payment_date'=>is_object($p->payment_date)?$p->payment_date->format('Y-m-d'):($p->payment_date ?? ''),'notes'=>$p->notes ?? ''];
+                        $paymentsMobile[] = ['id'=>$p->id ?? null,'payer_name'=>$p->payer_name ?? '','amount'=>number_format($p->amount ?? 0,2,'.',''),'payment_date'=>is_object($p->payment_date)?$p->payment_date->format('Y-m-d'):$p->payment_date,'notes'=>$p->notes ?? ''];
                     }
                 }
-                // Ensure $perExportUrl is defined for the export button
-                $perExportUrl = '#'; // Default value
+                $perExportUrl = '#';
                 if (\Route::has('installments.exportPdf')) {
                     $perExportUrl = route('installments.exportPdf', $item->id);
                 }
@@ -729,12 +792,10 @@
             <div class="col-12">
                 <div class="card shadow-sm installment-card" data-id="{{ $item->id }}">
                     <div class="card-body p-3">
-                        {{-- Top section: Installment Name, Owner, Phone, Address and Total Amount, Due Date --}}
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="flex-grow-1 me-2" style="min-width: 0;"> {{-- min-width: 0 to allow shrinking --}}
+                            <div class="flex-grow-1 me-2" style="min-width: 0;">
                                 <div class="fw-bold fs-6 text-truncate-custom">{{ $item->name }}</div>
                                 <div class="small text-muted mt-1 text-truncate-custom">{{ Str::limit($item->owner_name ?? '-', 60) }}</div>
-                                {{-- Combined phone and address with truncation --}}
                                 <div class="small text-muted mt-1">
                                     هاتف: <span class="text-truncate-custom d-inline-block" style="max-width: calc(50% - 20px);">{{ $item->phone ?? '-' }}</span>
                                     · عنوان: <span class="text-truncate-custom d-inline-block" style="max-width: calc(50% - 20px);">{{ Str::limit($item->address ?? '-', 40) }}</span>
@@ -748,7 +809,6 @@
 
                         <hr class="my-2">
 
-                        {{-- Middle section: Paid, Remaining and Action Buttons --}}
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div class="d-flex flex-column text-start flex-grow-1" style="min-width: 0;">
                                 <div class="small text-muted">مدفوع: <span class="fw-bold">{{ number_format($item->paidAmount(), 2) }}</span></div>
@@ -820,18 +880,16 @@
                                     @csrf @method('DELETE')
                                     <button class="btn btn-danger btn-sm" title="حذف القسط"><i class="bi bi-trash"></i></button>
                                 </form>
-                                <td class="d-none d-sm-table-cell">
-                                            @if(auth()->user()->google_token ?? false)
-                                                <form action="{{ route('installments.addToGoogle', $item->id) }}" method="POST" style="display:inline;">
-                                                    @csrf
-                                                    <button class="btn btn-outline-success btn-sm" title="إضافة للتقويم"><i class="bi bi-calendar-plus"></i> <span class="d-none d-md-inline">تقويم</span></button>
-                                                </form>
-                                            @endif
-                                        </td>
+
+                                @if(auth()->user()->google_token ?? false)
+                                    <form action="{{ route('installments.addToGoogle', $item->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <button class="btn btn-outline-success btn-sm" title="إضافة للتقويم"><i class="bi bi-calendar-plus"></i></button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
 
-                        {{-- Bottom section: Status Badge --}}
                         <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
                             <div>
                                 @if($item->status == 'paid')
@@ -840,8 +898,6 @@
                                     <span class="badge bg-warning text-dark">قيد الانتظار</span>
                                 @endif
                             </div>
-                            {{-- Installment ID can be added here if needed, similar to debts --}}
-                            {{-- <div><span class="small text-muted">#{{ $item->id }}</span></div> --}}
                         </div>
                     </div>
                 </div>
@@ -851,7 +907,6 @@
         @endforelse
     </div>
 
-    {{-- Pagination, moved outside the loop --}}
     @if ($installments->hasPages())
         <div class="d-flex justify-content-center mt-3">
             {{ $installments->links() }}
@@ -859,7 +914,6 @@
     @endif
 </div>
 
-{{-- The totals cards are fine as they are not part of the mobile card responsive issue --}}
 <div class="row mt-3 g-3">
     <div class="col-lg-6">
         <div class="card shadow-sm">
@@ -912,7 +966,6 @@
 .table-responsive { -webkit-overflow-scrolling: touch; overflow-x:auto; }
 .card-body { overflow: visible; }
 @media (min-width: 1200px){
-    /* allow table to use available width on very wide screens */
     .table { width: 100%; }
     .table th, .table td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
@@ -927,116 +980,51 @@
 .modal-lg { max-width: 900px; }
 .modal-xl { max-width: 1100px; }
 .text-nowrap { white-space: nowrap !important; }
-/* Modal styling */
-#showInstallmentModal .modal-header { gap: 1rem; }
-#showInstallmentModal .card { border-radius: 10px; }
-#showInstallmentModal .card .card-body { padding: 1rem; }
-#showInstallmentModal .table thead th { position: sticky; top: 0; background: #fff; z-index:2; }
-#showInstallmentModal #show_attachments a { display:inline-flex; align-items:center; justify-content:center; width:84px; height:64px; background:#f8fafc; border:1px solid #eef2f7; border-radius:8px; padding:6px; text-decoration:none; color:inherit; }
-#showInstallmentModal #show_attachments img { max-width:100%; max-height:100%; border-radius:6px; object-fit:cover; }
-#showInstallmentModal .card-subtitle { font-size:.9rem; color:#6b7280; }
-#showInstallmentModal .fw-semibold { font-weight:600; }
 @media (max-width: 767.98px) {
-  #showInstallmentModal .modal-dialog { max-width: 95%; }
-  #showInstallmentModal .table-responsive { max-height: 40vh; }
-  #showInstallmentModal #show_attachments a { width:64px; height:56px; }
-}
-                              /* Responsive specific styles for mobile cards - MAKE SURE THESE ARE INCLUDED */
-@media (max-width: 767.98px) {
-  /* Ensure card body content doesn't overflow */
-  .installment-card .card-body { /* Changed from .debtor-card to .installment-card */
-    overflow: hidden; /* Hide anything that overflows */
-    padding: 10px; /* Adjust padding for smaller screens */
+  .installment-card .card-body {
+    overflow: hidden;
+    padding: 10px;
   }
-
-  /* Custom classes for text truncation and word breaking within cards */
   .text-truncate-custom {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block; /* Ensure it takes full width to truncate effectively */
-    max-width: 100%; /* Limit to parent's width */
+    display: block;
+    max-width: 100%;
   }
-
-  /* For notes or addresses that can break words */
   .text-break-all-custom {
-    word-break: break-all; /* Break words anywhere if too long */
-    overflow-wrap: break-word; /* For better compatibility */
-    max-width: 100%; /* Ensure it respects card boundaries */
+    word-break: break-all;
+    overflow-wrap: break-word;
+    max-width: 100%;
     display: block;
   }
-
-  /* Adjust spacing and sizing for action buttons on mobile */
   .action-buttons-mobile {
-    justify-content: center !important; /* Center buttons if they wrap to a new line */
-    width: 100%; /* Take full width to allow better wrapping */
+    justify-content: center !important;
+    width: 100%;
   }
-
   .action-buttons-mobile .btn {
-    flex-grow: 1; /* Allow buttons to grow and fill space, but limit by max-width */
-    max-width: 48px; /* Set a reasonable max-width for buttons to avoid being too large */
-    min-width: 40px; /* Ensure buttons are not too small */
-    height: 40px; /* Make buttons square */
-    display: flex; /* Use flex for icon centering */
+    flex-grow: 1;
+    max-width: 48px;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
     align-items: center;
     justify-content: center;
   }
-
   .action-buttons-mobile .btn i {
-      font-size: 1.1rem; /* Slightly larger icons */
+      font-size: 1.1rem;
   }
-
-  /* Adjust display for details and payments tables in modals for small screens */
-  /* These rules are for the modals, keep them if you have similar modals for installments */
-  #show_installment_details_table th { width:120px; } /* Assuming you have a similar modal for installments */
+  #show_installment_details_table th { width:120px; }
   #show_installment_payments_table thead, #show_installment_attachments_table thead { display:none; }
   #show_installment_payments_table tbody tr, #show_installment_attachments_table tbody tr {
-    display: flex; /* Change to flex for better vertical stacking */
-    flex-direction: column; /* Stack items vertically */
-    gap: 4px; /* Reduce gap */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     padding: 8px;
     border-bottom:1px solid #eee;
-    align-items: flex-end; /* Align text to the right for RTL */
-  }
-  #show_installment_payments_table tbody td, #show_installment_attachments_table tbody td {
-    display: block;
-    text-align: right;
-    width: 100%; /* Ensure each cell takes full width when stacked */
-  }
-  
-/* These rules are crucial for table cells responsiveness */
-.table th, .table td { 
-    vertical-align: middle; 
-    white-space: normal; /* Allow text to wrap by default */
-    word-break: break-word; /* Break long words */
-}
-
-/* This rule specifically for text-truncate on table cells */
-.table .text-truncate { 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    white-space: nowrap; /* Essential for text-truncate to work */
-    display: inline-block; /* Or block, depending on desired layout, inline-block often better for table cells */
-    max-width: 100%; /* Limit to cell's width */
-}
-
-/* Any custom min-widths for specific columns can also be defined here if not in HTML */
-/* Example:
-@media (min-width: 768px) {
-  .table th:nth-child(3), .table td:nth-child(3) { min-width: 120px; } // For "اسم القسط"
-  // ... more specific column widths
-}                             
-  /* Additional adjustment for the main content areas within the card */
-  .installment-card .card-body > .d-flex.justify-content-between.align-items-start.mb-2 > div:first-child {
-      flex-basis: 70%; /* Give more space to text area */
-      max-width: 70%;
-  }
-  .installment-card .card-body > .d-flex.justify-content-between.align-items-start.mb-2 > div:last-child {
-      flex-basis: 30%; /* Less space for amount/due date */
-      max-width: 30%;
+    align-items: flex-end;
   }
 }
-
 </style>
 @endsection
 
